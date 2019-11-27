@@ -75,17 +75,6 @@ fn main() -> std::io::Result<()> {
                 .long("version")
                 .help("Output version information and exit"),
         )
-        .after_help(
-            "Shows information from the /proc filesystem such as battery status or\
-                     thermal information. \
-                        
-                        -b, --battery           Battery information\
-                        -a, --ac-adapter        AC adapter information\
-                        -V, --everything        Show every device, overrides above options\
-                        -d, --directory <DIR>   Path to ACPI info; default is /sys/class\
-                        -h, --help              Display this usage and exit
-                    ",
-        )
         .get_matches();
     if matches.is_present("help") {
         print_usage_and_exit();
@@ -97,6 +86,7 @@ fn main() -> std::io::Result<()> {
             acpi_path,
             show_battery: matches.is_present("battery") || matches.is_present("everything"),
             show_ac_adapter: matches.is_present("ac-adapter") || matches.is_present("everything"),
+            detailed: matches.is_present("details") || matches.is_present("everything"),
         };
         match acpitool::run(cfg) {
             Ok(_) => Ok(()),
@@ -113,6 +103,9 @@ fn print_usage_and_exit() {
     println!("thermal information.");
     println!("");
     println!("   -b, --battery           Battery information");
+    println!("   -i, --details           Show additional details if available:");
+    println!("                             - Battery capacity information");
+    println!("                             - Temperature trip points");
     println!("   -a, --ac-adapter        AC adapter information");
     println!("   -V, --everything        Show every device, overrides above options");
     println!("   -d, --directory <DIR>   Path to ACPI info; default is /sys/class");

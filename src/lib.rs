@@ -5,6 +5,7 @@ pub struct Config {
     pub acpi_path: path::PathBuf,
     pub show_battery: bool,
     pub show_ac_adapter: bool,
+    pub detailed: bool,
 }
 
 pub fn run(cfg: Config) -> Result<(), Box<dyn Error>> {
@@ -18,7 +19,7 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn Error>> {
                 }
             };
         for bat in batteries {
-            display_battery_info(&bat);
+            display_battery_info(&bat, cfg.detailed);
         }
     }
     if cfg.show_ac_adapter {
@@ -37,7 +38,7 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn display_battery_info(bat: &acpi_client::BatteryInfo) {
+fn display_battery_info(bat: &acpi_client::BatteryInfo, detailed: bool) {
     let state = match &bat.state {
         acpi_client::ChargingState::Charging => "Charging",
         acpi_client::ChargingState::Discharging => "Discharging",
@@ -64,6 +65,10 @@ fn display_battery_info(bat: &acpi_client::BatteryInfo) {
         "{}: {}, {:.1}%{}",
         &bat.name, state, bat.percentage, charge_time_string
     );
+
+    if detailed {
+        println!("{}: design capacity {} mAh, last full capacity {} mAh = {}%", &bat.name, bat.design_capacity, bat.last_capacity, (100 * bat.last_capacity) / bat.design_capacity);
+    }
 }
 
 fn display_ac_adapter_info(ac: &acpi_client::ACAdapterInfo) {
