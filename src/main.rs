@@ -1,67 +1,107 @@
-use std::path;
+use clap::{App, Arg};
 
 fn main() -> std::io::Result<()> {
-    let power_supply_path = path::Path::new("/sys/class/power_supply");
-    let batteries: Vec<acpi_client::BatteryInfo> =
-        match acpi_client::get_battery_info(&power_supply_path) {
-            Ok(bat) => bat,
+    let matches = App::new("acpitool")
+        .version("1.0")
+        .author("Shane Snover <ssnover95@gmail.com>")
+        .arg(
+            Arg::with_name("battery")
+                .short("b")
+                .long("battery")
+                .help("Battery information"),
+        )
+        .arg(Arg::with_name("details").short("i").long("details").help(
+            "Show additional details if available on battery capacity and temperature trip points",
+        ))
+        .arg(
+            Arg::with_name("ac-adapter")
+                .short("a")
+                .long("ac-adapter")
+                .help("AC adapter information"),
+        )
+        .arg(
+            Arg::with_name("thermal")
+                .short("t")
+                .long("thermal")
+                .help("Thermal information"),
+        )
+        .arg(
+            Arg::with_name("cooling")
+                .short("c")
+                .long("cooling")
+                .help("Cooling information"),
+        )
+        .arg(
+            Arg::with_name("everything")
+                .short("V")
+                .long("everything")
+                .help("Show every device, overrides above options"),
+        )
+        .arg(
+            Arg::with_name("show-empty")
+                .short("s")
+                .long("show-empty")
+                .help("Show non-operational devices"),
+        )
+        .arg(
+            Arg::with_name("fahrenheit")
+                .short("f")
+                .long("fahrenheit")
+                .help("Use Fahrenheit as the temperature unit"),
+        )
+        .arg(
+            Arg::with_name("kelvin")
+                .short("k")
+                .long("kelvin")
+                .help("Use Kelvin as the temperature unit"),
+        )
+        .arg(
+            Arg::with_name("directory")
+                .short("d")
+                .long("directory")
+                .value_name("DIR")
+                .help("Path to ACPI info; default is /sys/class")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("help")
+                .short("h")
+                .long("help")
+                .help("Display this help and exit"),
+        )
+        .arg(
+            Arg::with_name("version")
+                .short("v")
+                .long("version")
+                .help("Output version information and exit"),
+        )
+        .after_help("Shows information from the /proc filesystem such as battery status or\
+                     thermal information. \
+                        
+                        -b, --battery           Battery information\
+                        -a, --ac-adapter        AC adapter information\
+                        -V, --everything        Show every device, overrides above options\
+                        -d, --directory <DIR>   Path to ACPI info; default is /sys/class\
+                        -h, --help              Display this usage and exit
+                    ")
+        .get_matches();
+    if matches.is_present("help") {
+        println!("{}", matches.usage());
+        std::process::exit(0);
+    } else {
+        let acpi_path = std::path::Path::new(matches.value_of("directory").unwrap_or("/sys/class"))
+            .to_path_buf();
+        let cfg = acpitool::Config {
+            acpi_path,
+            show_battery: matches.is_present("battery") || matches.is_present("everything"),
+            show_ac_adapter: matches.is_present("ac-adapter") || matches.is_present("everything"),
+        };
+        match acpitool::run(cfg) {
+            Ok(_) => Ok(()),
             Err(e) => {
                 eprintln!("Application error: {}", e);
                 std::process::exit(1);
-            }
-        };
-    let adapters: Vec<acpi_client::ACAdapterInfo> =
-        match acpi_client::get_ac_adapter_info(&power_supply_path) {
-            Ok(ac) => ac,
-            Err(e) => {
-                eprintln!("Application error: {}", e);
-                std::process::exit(1);
-            }
-        };
-
-    for bat in batteries {
-        display_power_supply_info(&bat);
-    }
-    for ac in adapters {
-        display_ac_adapter_info(&ac);
-    }
-
-    Ok(())
-}
-
-fn display_power_supply_info(bat: &acpi_client::BatteryInfo) {
-    let state = match &bat.state {
-        acpi_client::ChargingState::Charging => "Charging",
-        acpi_client::ChargingState::Discharging => "Discharging",
-        acpi_client::ChargingState::Full => "Full",
-    };
-    let mut seconds = bat.time_remaining.as_secs();
-    let hours = seconds / 3600;
-    seconds = seconds - hours * 3600;
-    let minutes = seconds / 60;
-    seconds = seconds - minutes * 60;
-    let not_full_string = format!(", {:02}:{:02}:{:02}", hours, minutes, seconds);
-    let charge_time_string = match &bat.state {
-        acpi_client::ChargingState::Charging => {
-            if bat.present_rate > 0 {
-                format!("{} {}", not_full_string, "until charged")
-            } else {
-                format!(", charging at zero rate")
             }
         }
-        acpi_client::ChargingState::Discharging => format!("{} {}", not_full_string, "remaining"),
-        _ => String::from(""),
-    };
-    println!(
-        "{}: {}, {:.1}%{}",
-        &bat.name, state, bat.percentage, charge_time_string
-    );
-}
-
-fn display_ac_adapter_info(ac: &acpi_client::ACAdapterInfo) {
-    let status_str = match ac.status {
-        acpi_client::Status::Online => "online",
-        acpi_client::Status::Offline => "offline",
-    };
-    println!("{}: {}", &ac.name, status_str);
+    }
 }
