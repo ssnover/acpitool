@@ -1,3 +1,4 @@
+use std::env;
 use clap::{App, Arg};
 
 fn main() -> std::io::Result<()> {
@@ -80,8 +81,13 @@ fn main() -> std::io::Result<()> {
         print_usage_and_exit();
         Ok(())
     } else {
-        let acpi_path = std::path::Path::new(matches.value_of("directory").unwrap_or("/sys/class"))
-            .to_path_buf();
+        let env_path = env::var("ACPI_PATH").unwrap_or(String::from("/sys/class"));
+        let acpi_path = if matches.is_present("directory") {
+            matches.value_of("directory").unwrap()
+        } else {
+            env_path.as_str()
+        };
+        let acpi_path = std::path::Path::new(acpi_path).to_path_buf();
         let cfg = acpitool::Config {
             acpi_path,
             show_battery: matches.is_present("battery") || matches.is_present("everything"),
