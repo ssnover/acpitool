@@ -47,7 +47,7 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn Error>> {
                 }
             };
         for tz in sensors {
-            display_thermal_zone_info(&tz);
+            display_thermal_zone_info(&tz, cfg.detailed);
         }
     }
 
@@ -101,7 +101,7 @@ fn display_ac_adapter_info(ac: &acpi_client::ACAdapterInfo) {
     println!("{}: {}", &ac.name, status_str);
 }
 
-fn display_thermal_zone_info(tz: &acpi_client::ThermalSensor) {
+fn display_thermal_zone_info(tz: &acpi_client::ThermalSensor, detailed: bool) {
     let temperature_str = match tz.units {
         acpi_client::Units::Celsius => "degrees C",
         acpi_client::Units::Fahrenheit => "degrees F",
@@ -111,4 +111,10 @@ fn display_thermal_zone_info(tz: &acpi_client::ThermalSensor) {
         "{}: {:.1} {}",
         &tz.name, tz.current_temperature, temperature_str
     );
+
+    if detailed {
+        for tp in &tz.trip_points {
+            println!("{}: trip point {} switches to mode {} at temperature {:.1} {}", &tz.name, tp.number, &tp.action_type, tp.temperature, temperature_str);
+        }
+    }
 }
