@@ -1,5 +1,5 @@
-use std::env;
 use clap::{App, Arg};
+use std::env;
 
 fn main() -> std::io::Result<()> {
     let matches = App::new("acpitool")
@@ -88,11 +88,21 @@ fn main() -> std::io::Result<()> {
             env_path.as_str()
         };
         let acpi_path = std::path::Path::new(acpi_path).to_path_buf();
+        let units = if matches.is_present("kelvin") {
+            acpi_client::Units::Kelvin
+        } else if matches.is_present("fahrenheit") {
+            acpi_client::Units::Fahrenheit
+        } else {
+            acpi_client::Units::Celsius
+        };
+
         let cfg = acpitool::Config {
             acpi_path,
             show_battery: matches.is_present("battery") || matches.is_present("everything"),
             show_ac_adapter: matches.is_present("ac-adapter") || matches.is_present("everything"),
+            show_thermal_sensors: matches.is_present("thermal") || matches.is_present("everything"),
             detailed: matches.is_present("details") || matches.is_present("everything"),
+            units,
         };
         match acpitool::run(cfg) {
             Ok(_) => Ok(()),
@@ -113,7 +123,10 @@ fn print_usage_and_exit() {
     println!("                             - Battery capacity information");
     println!("                             - Temperature trip points");
     println!("   -a, --ac-adapter        AC adapter information");
+    println!("   -t, --thermal           Thermal information");
     println!("   -V, --everything        Show every device, overrides above options");
+    println!("   -f, --fahrenheit        Use Fahrenheit as the temperature unit (default Celsius)");
+    println!("   -k, --kelvin            Use Kelvin as the temperature unit (default Celsius)");
     println!("   -d, --directory <DIR>   Path to ACPI info; default is /sys/class");
     println!("   -h, --help              Display this usage and exit");
     println!("");
