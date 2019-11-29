@@ -6,6 +6,7 @@ pub struct Config {
     pub show_battery: bool,
     pub show_ac_adapter: bool,
     pub show_thermal_sensors: bool,
+    pub show_cooling_devices: bool,
     pub detailed: bool,
     pub units: acpi_client::Units,
 }
@@ -48,6 +49,19 @@ pub fn run(cfg: Config) -> Result<(), Box<dyn Error>> {
             };
         for tz in sensors {
             display_thermal_zone_info(&tz, cfg.detailed);
+        }
+    }
+    if cfg.show_cooling_devices {
+        let devices: Vec<acpi_client::CoolingDevice> =
+            match acpi_client::get_cooling_device_info(&cfg.acpi_path.join("thermal")) {
+                Ok(cd) => cd,
+                Err(e) => {
+                    eprintln!("Application error: {}", e);
+                    std::process::exit(1);
+                }
+            };
+        for cd in devices {
+            display_cooling_device_info(&cd);
         }
     }
 
@@ -117,4 +131,13 @@ fn display_thermal_zone_info(tz: &acpi_client::ThermalSensor, detailed: bool) {
             println!("{}: trip point {} switches to mode {} at temperature {:.1} {}", &tz.name, tp.number, &tp.action_type, tp.temperature, temperature_str);
         }
     }
+}
+
+fn display_cooling_device_info(cd: &acpi_client::CoolingDevice) {
+    let state_str = if cd.state.is_some() {
+        format!("{} of {}", cd.state.unwrap().current_state, cd.state.unwrap().max_state)
+    } else {
+        format!("no state information available")
+    };
+    println!("{}: {} {}", &cd.name, &cd.device_type, state_str);
 }

@@ -101,6 +101,7 @@ fn main() -> std::io::Result<()> {
             show_battery: matches.is_present("battery") || matches.is_present("everything"),
             show_ac_adapter: matches.is_present("ac-adapter") || matches.is_present("everything"),
             show_thermal_sensors: matches.is_present("thermal") || matches.is_present("everything"),
+            show_cooling_devices: matches.is_present("cooling") || matches.is_present("everything"),
             detailed: matches.is_present("details") || matches.is_present("everything"),
             units,
         };
@@ -119,11 +120,12 @@ fn print_usage_and_exit() {
     println!("thermal information.");
     println!("");
     println!("   -b, --battery           Battery information");
+    println!("   -a, --ac-adapter        AC adapter information");
+    println!("   -t, --thermal           Thermal information");
+    println!("   -c, --cooling           Cooling information");
     println!("   -i, --details           Show additional details if available:");
     println!("                             - Battery capacity information");
     println!("                             - Temperature trip points");
-    println!("   -a, --ac-adapter        AC adapter information");
-    println!("   -t, --thermal           Thermal information");
     println!("   -V, --everything        Show every device, overrides above options");
     println!("   -f, --fahrenheit        Use Fahrenheit as the temperature unit (default Celsius)");
     println!("   -k, --kelvin            Use Kelvin as the temperature unit (default Celsius)");
