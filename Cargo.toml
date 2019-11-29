@@ -1,10 +1,10 @@
 [package]
 name = "acpitool"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["ssnover95 <ssnover95@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-acpi_client = { path = "../acpi-rs" }
+acpi_client = "1.0.0"
 clap = "2.33.0"
 

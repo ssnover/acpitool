@@ -2,13 +2,14 @@
 # It is not intended for manual editing.
 [[package]]
 name = "acpi_client"
-version = "0.2.0"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "acpitool"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
- "acpi_client 0.2.0",
+ "acpi_client 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -96,6 +97,7 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
+"checksum acpi_client 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "56a308fe6e187619beddfff6ec24c239af7bfb8cd114e1556c6541007f9e66e4"
 "checksum ansi_term 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ee49baf6cb617b853aa8d93bf420db2383fab46d314482ca2803b40d5fde979b"
 "checksum atty 0.2.13 (registry+https://github.com/rust-lang/crates.io-index)" = "1803c647a3ec87095e7ae7acfca019e98de5ec9a7d01343f611cf3152ed71a90"
 "checksum bitflags 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
