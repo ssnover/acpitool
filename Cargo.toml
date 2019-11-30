@@ -8,3 +8,7 @@ edition = "2018"
 acpi_client = "1.0.0"
 clap = "2.33.0"
 
+[[bin]]
+name = "acpitool"
+path = "src/main.rs"
+
